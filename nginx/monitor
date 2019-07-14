@@ -1,0 +1,20 @@
+docker service create \
+  --name=viz \
+  --publish=8000:8080/tcp \
+  --constraint=node.role==manager \
+  --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+  dockersamples/visualizer
+
+docker service create --name web --replicas 1 --publish 8080:8080 darek/goweb:1.0
+
+docker service scale web=4
+
+vagrant ssh worker1
+sudo apt-get install httpie -y
+http localhost:8080	
+
+docker service update --update-delay 5s web
+
+docker service update --image darek/goweb:2.0 web
+
+docker service ps web
